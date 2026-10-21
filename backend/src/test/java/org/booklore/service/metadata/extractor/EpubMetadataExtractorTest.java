@@ -403,6 +403,19 @@ class EpubMetadataExtractorTest {
         }
 
         @ParameterizedTest
+        @ValueSource(strings = {"", " - ", "1234-56789", "12345 678901", "123456-789012", "1234567-8901234"})
+        void ignoresIsbnWithInvalidNormalizedLength(String isbn) throws IOException {
+            String opf = wrapOpf("""
+                    <dc:title>Book</dc:title>
+                    <dc:identifier opf:scheme="ISBN">%s</dc:identifier>
+                    """.formatted(isbn));
+            BookMetadata metadata = extractor.extractMetadata(createEpub(opf));
+
+            assertThat(metadata.getIsbn10()).isNull();
+            assertThat(metadata.getIsbn13()).isNull();
+        }
+
+        @ParameterizedTest
         @ValueSource(strings = {"9780134685991", "978-0-13-468599-1", "978 0 13 468599 1"})
         void parsesUrnIsbnFormat(String isbn) throws IOException {
             String opf = wrapOpf("""

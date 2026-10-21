@@ -31,11 +31,13 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class BookdropMetadataIntegrationTest {
 
-    private static final Path FORMATTED_ISBN_EPUB = Path.of("src/test/resources/epub/formatted-isbn.epub");
-
     @Test
     void preservesNormalizedIsbnThroughBookdropImport(@TempDir Path tempDir) throws IOException {
-        File epubFile = Files.copy(FORMATTED_ISBN_EPUB, tempDir.resolve("book.epub")).toFile();
+        File epubFile = tempDir.resolve("book.epub").toFile();
+        try (var epubResource = getClass().getResourceAsStream("/epub/formatted-isbn.epub")) {
+            assertThat(epubResource).isNotNull();
+            Files.copy(epubResource, epubFile.toPath());
+        }
         BookdropFileEntity bookdropFile = new BookdropFileEntity();
         bookdropFile.setId(1L);
         bookdropFile.setFileName(epubFile.getName());
